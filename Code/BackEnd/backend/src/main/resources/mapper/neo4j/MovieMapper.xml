@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="backend.dao.neo4j.MovieMapper">
+    <select id="getMovieByDirector" resultType="common.ReturnMovieResult">
+        MATCH
+        (m:movie)-[:direct]-(d:director)
+        WHERE d.name=
+        #{director}
+        Return
+        m
+        .
+        product_id
+        as
+        product_id
+        ,
+        m
+        .
+        title
+        as
+        title
+        ,
+        m
+        .
+        director
+        as
+        director
+        ,
+        m
+        .
+        actor
+        as
+        actor
+    </select>
+    <select id="getDetailMovie" resultType="common.DetailMovieResult">
+        MATCH
+        (m:movie)
+        WHERE m.product_id=
+        #{product_id}
+        Return
+        m
+        .
+        product_id
+        as
+        product_id,
+        m
+        .
+        title
+        as
+        title,
+        m
+        .
+        genres
+        as
+        genres,
+        m
+        .
+        director
+        as
+        director,
+        m
+        .
+        actor
+        as
+        actor,
+        m
+        .
+        supporting_actors
+        as
+        supporting_actors,
+        m
+        .
+        run_time
+        as
+        run_time,
+        toString
+        (
+        m
+        .
+        release_date
+        )
+        as
+        release_date,
+        m
+        .
+        star
+        as
+        star,
+        m
+        .
+        link_id
+        as
+        link_id,
+        m
+        .
+        link_title
+        as
+        link_title
+    </select>
+    <select id="getMovie" resultType="common.ReturnMovieResult">
+        MATCH
+        (m:movie)
+        WITH
+        m
+        <if test="searchCommand.director != ''">
+            MATCH
+            (m:movie)-[:direct]-(d:director)
+            WHERE
+            d.name=#{searchCommand.director}
+            WITH m
+        </if>
+        <if test="searchCommand.actor != ''">
+            MATCH
+            (m:movie)-[r:act]-(a:actor)
+            WHERE
+            a.name=#{searchCommand.actor}
+            <if test="searchCommand.is_supporting != ''">
+                and
+                r.is_suooprting=#{searchCommand.is_supporting}
+            </if>
+            WITH m
+        </if>
+        <if test="searchCommand.genre != ''">
+            MATCH
+            (m:movie)-[:is_genre]-(g:genre)
+            WHERE
+            g.name=#{searchCommand.genre}
+            WITH m
+        </if>
+        <if test="searchCommand.star != ''">
+            MATCH
+            (m:movie)
+            WHERE
+            m.star > #{searchCommand.star}
+            WITH m
+        </if>
+        <if test="searchCommand.year != ''">
+            MATCH
+            (m:movie)-[:is_time]-(t:time)
+            WHERE
+            t.year = #{searchCommand.year}
+            WITH m
+        </if>
+        <if test="searchCommand.month != ''">
+            MATCH
+            (m:movie)-[:is_time]-(t:time)
+            WHERE
+            t.month = #{searchCommand.month}
+            WITH m
+        </if>
+        <if test="searchCommand.day != ''">
+            MATCH
+            (m:movie)-[:is_time]-(t:time)
+            WHERE
+            t.day = #{searchCommand.day}
+            WITH m
+        </if>
+        <if test="searchCommand.week != ''">
+            MATCH
+            (m:movie)-[:is_time]-(t:time)
+            WHERE
+            t.week = #{searchCommand.week}
+            WITH m
+        </if>
+        <if test="searchCommand.searchQuarter != 0">
+            MATCH
+            (m:movie)-[:is_time]-(t:time)
+            WHERE
+            t.month in #{searchCommand.months}
+            WITH m
+        </if>
+        return
+        m.product_id
+        as
+        product_id,
+        m.title
+        as
+        title,
+        m.director
+        as
+        director
+        skip #{searchCommand.skip}
+        limit #{searchCommand.limit}
+    </select>
+    <select id="getDirectorByActor" resultType="common.ReturnDirectorResult">
+        MATCH
+        (d:director)-[r:director_actor_corporate]-(a:actor)
+        WHERE
+        a.name=
+        #{actor}
+        return
+        d
+        .
+        name
+        as
+        name,
+        r
+        .
+        count
+        as
+        count
+        order
+        by
+        count
+        desc
+        skip
+        #{skip}
+        limit
+        #{limit}
+    </select>
+    <select id="getMovieCount" resultType="java.lang.Integer">
+        MATCH
+        (m:movie)
+        WITH
+        m
+        <if test="searchCommand.director != ''">
+            MATCH
+            (m:movie)-[:direct]-(d:director)
+            WHERE
+            d.name=#{searchCommand.director}
+            WITH m
+        </if>
+        <if test="searchCommand.actor != ''">
+            MATCH
+            (m:movie)-[r:act]-(a:actor)
+            WHERE
+            a.name=#{searchCommand.actor}
+            <if test="searchCommand.is_supporting != ''">
+                and
+                r.is_suooprting=#{searchCommand.is_supporting}
+            </if>
+            WITH m
+        </if>
+        <if test="searchCommand.genre != ''">
+            MATCH
+            (m:movie)-[:is_genre]-(g:genre)
+            WHERE
+            g.name=#{searchCommand.genre}
+            WITH m
+        </if>
+        <if test="searchCommand.star != ''">
+            MATCH
+            (m:movie)
+            WHERE
+            m.star > #{searchCommand.star}
+            WITH m
+        </if>
+        <if test="searchCommand.year != ''">
+            MATCH
+            (m:movie)-[:is_time]-(t:time)
+            WHERE
+            t.year = #{searchCommand.year}
+            WITH m
+        </if>
+        <if test="searchCommand.month != ''">
+            MATCH
+            (m:movie)-[:is_time]-(t:time)
+            WHERE
+            t.month = #{searchCommand.month}
+            WITH m
+        </if>
+        <if test="searchCommand.day != ''">
+            MATCH
+            (m:movie)-[:is_time]-(t:time)
+            WHERE
+            t.day = #{searchCommand.day}
+            WITH m
+        </if>
+        <if test="searchCommand.week != ''">
+            MATCH
+            (m:movie)-[:is_time]-(t:time)
+            WHERE
+            t.week = #{searchCommand.week}
+            WITH m
+        </if>
+        <if test="searchCommand.searchQuarter != 0">
+            MATCH
+            (m:movie)-[:is_time]-(t:time)
+            WHERE
+            t.month in #{searchCommand.months}
+            WITH m
+        </if>
+        return
+        count
+        (
+        m
+        )
+    </select>
+    <select id="getActorByDirector" resultType="common.ReturnActorResult">
+        MATCH
+        (d:director)&lt;-[r:director_actor_corporate]-(a:actor)
+        WHERE
+        d.name=
+        #{director}
+        return
+        a
+        .
+        name
+        as
+        name,
+        r
+        .
+        count
+        as
+        count
+        order
+        by
+        count
+        desc
+        skip
+        #{skip}
+        limit
+        #{limit}
+    </select>
+    <select id="getActorByActor" resultType="common.ReturnActorResult">
+        MATCH
+        (d:actor)&lt;-[r:actor_actor_corporate]-(a:actor)
+        WHERE
+        d.name=
+        #{actor}
+        return
+        a
+        .
+        name
+        as
+        name,
+        r
+        .
+        count
+        as
+        count
+        order
+        by
+        count
+        desc
+        skip
+        #{skip}
+        limit
+        #{limit}
+    </select>
+    <select id="getDirectorByActorCount" resultType="java.lang.Integer">
+        MATCH
+        (d:director)-[r:director_actor_corporate]-&gt;(a:actor)
+        WHERE
+        a.name=
+        #{actor}
+        return
+        count
+        (
+        d
+        )
+    </select>
+    <select id="getActorByDirectorCount" resultType="java.lang.Integer">
+        MATCH
+        (d:director)&lt;-[r:director_actor_corporate]-(a:actor)
+        WHERE
+        d.name=
+        #{director}
+        return
+        count
+        (
+        a
+        )
+    </select>
+    <select id="getActorByActorCount" resultType="java.lang.Integer">
+        MATCH
+        (d:actor)&lt;-[r:actor_actor_corporate]-(a:actor)
+        WHERE
+        d.name=
+        #{actor}
+        return
+        count
+        (
+        a
+        )
+    </select>
+    <select id="getReview" resultType="common.ReturnReviewResult">
+        MATCH
+        (m:movie)-[:review_to]-(r:review)
+        WHERE
+        m.product_id=
+        #{productId}
+        return
+        r
+        .
+        user_id
+        as
+        user_id,
+        r
+        .
+        score
+        as
+        score,
+        r
+        .
+        star
+        as
+        star
+    </select>
+    <select id="getSeriesReview" resultType="common.ReturnReviewResult">
+        MATCH
+        (m:movie)-[:is_series]-(:series)-[:review_to]-(r:review)
+        WHERE
+        m.product_id=
+        #{productId}
+        return
+        r
+        .
+        user_id
+        as
+        user_id,
+        r
+        .
+        score
+        as
+        score,
+        r
+        .
+        star
+        as
+        star
+    </select>
+    <select id="getMonthStatistics" resultType="java.lang.Integer">
+        match
+        (m:movie)-[:is_time]-(t:time)
+        where t.month=
+        #{month}
+        return
+        count
+        (
+        distinct
+        (
+        m
+        .
+        product_id
+        )
+        )
+    </select>
+    <select id="getWeekStatistics" resultType="java.lang.Integer">
+        match
+        (m:movie)-[:is_time]-(t:time)
+        where t.week=
+        #{week}
+        return
+        count
+        (
+        distinct
+        (
+        m
+        .
+        product_id
+        )
+        )
+    </select>
+</mapper>
